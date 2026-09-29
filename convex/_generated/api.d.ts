@@ -10,5 +10,8 @@ export declare const api: {
     clearCompleted: FunctionReference<"mutation", "public", {}, { deletedCount: number }>;
     clearAll: FunctionReference<"mutation", "public", {}, { deletedCount: number }>;
   };
+  users: {
+    currentUser: FunctionReference<"query", "public", {}, any>;
+  };
 };
 export declare const internal: AnyApi;
