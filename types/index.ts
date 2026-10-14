@@ -1,11 +1,4 @@
-export interface Todo {
-  _id: string;
-  text: string;
-  isCompleted: boolean;
-  createdAt: number;
-}
-
-export interface ThemeColors {
+﻿export interface ThemeColors {
   bg: string;
   surface: string;
   border: string;

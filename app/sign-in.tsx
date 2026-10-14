@@ -1,4 +1,4 @@
-import { useTheme } from "@/context/ThemeContext";
+﻿import { useTheme } from "@/context/ThemeContext";
 import { useAuthActions } from "@convex-dev/auth/react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
@@ -50,40 +50,18 @@ export default function SignInScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardView}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <View style={[styles.iconContainer, { backgroundColor: colors.primary }]}>
-              <MaterialIcons name="check-circle" size={44} color="#FFFFFF" />
+              <MaterialIcons name="casino" size={44} color="#FFFFFF" />
             </View>
-            <Text style={[styles.title, { color: colors.text }]}>Todo App</Text>
-            <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-              Увійдіть у свій персональний простір завдань
-            </Text>
+            <Text style={[styles.title, { color: colors.text }]}>Card Games</Text>
+            <Text style={[styles.subtitle, { color: colors.textMuted }]}>Увійдіть, щоб почати гру</Text>
           </View>
-
           <View style={styles.form}>
-            <View
-              style={[
-                styles.inputContainer,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                },
-              ]}
-            >
-              <MaterialIcons
-                name="mail-outline"
-                size={22}
-                color={colors.textMuted}
-                style={styles.inputIcon}
-              />
+            <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <MaterialIcons name="mail-outline" size={22} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 placeholder="Email"
@@ -94,22 +72,8 @@ export default function SignInScreen() {
                 placeholderTextColor={colors.textMuted}
               />
             </View>
-
-            <View
-              style={[
-                styles.inputContainer,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                },
-              ]}
-            >
-              <MaterialIcons
-                name="lock-outline"
-                size={22}
-                color={colors.textMuted}
-                style={styles.inputIcon}
-              />
+            <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <MaterialIcons name="lock-outline" size={22} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 placeholder="Пароль"
@@ -119,36 +83,22 @@ export default function SignInScreen() {
                 placeholderTextColor={colors.textMuted}
               />
             </View>
-
             <TouchableOpacity
-              style={[
-                styles.button,
-                { backgroundColor: colors.primary },
-                isLoading && styles.buttonDisabled,
-              ]}
+              style={[styles.button, { backgroundColor: colors.primary }, isLoading && styles.buttonDisabled]}
               onPress={handleSignIn}
               disabled={isLoading}
               activeOpacity={0.8}
             >
-              {isLoading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <>
-                  <MaterialIcons name="login" size={20} color="#FFFFFF" />
-                  <Text style={styles.buttonText}>Увійти</Text>
-                </>
-              )}
+              {isLoading ? <ActivityIndicator color="#FFFFFF" /> : <>
+                <MaterialIcons name="login" size={20} color="#FFFFFF" />
+                <Text style={styles.buttonText}>Увійти</Text>
+              </>}
             </TouchableOpacity>
           </View>
-
           <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: colors.textMuted }]}>
-              Немає облікового запису?{" "}
-            </Text>
+            <Text style={[styles.footerText, { color: colors.textMuted }]}>Немає облікового запису? </Text>
             <TouchableOpacity onPress={() => router.push("/sign-up")}>
-              <Text style={[styles.footerLink, { color: colors.primary }]}>
-                Зареєструватися
-              </Text>
+              <Text style={[styles.footerLink, { color: colors.primary }]}>Зареєструватися</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

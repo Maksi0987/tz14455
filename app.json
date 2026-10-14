@@ -1,0 +1,12 @@
+﻿{
+  "expo": {
+    "name": "Card Games",
+    "slug": "card-games",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "cardgames",
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

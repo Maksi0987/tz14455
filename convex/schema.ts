@@ -1,15 +1,21 @@
-import { authTables } from "@convex-dev/auth/server";
+﻿import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
   ...authTables,
-  todos: defineTable({
-    userId: v.id("users"),
-    text: v.string(),
-    isCompleted: v.boolean(),
+  users: authTables.users.index("by_name", ["name"]),
+  
+  games: defineTable({
+    type: v.union(v.literal("blackjack"), v.literal("durak")),
+    status: v.union(v.literal("waiting"), v.literal("playing"), v.literal("finished")),
+    creatorId: v.id("users"),
+    players: v.array(v.id("users")),
+    currentTurn: v.optional(v.id("users")),
+    gameState: v.any(),
+    winnerId: v.optional(v.id("users")),
     createdAt: v.number(),
   })
-    .index("by_user", ["userId"])
-    .index("by_user_creation", ["userId", "createdAt"]),
+    .index("by_status", ["status"])
+    .index("by_type", ["type"]),
 });
