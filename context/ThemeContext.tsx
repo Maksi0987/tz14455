@@ -1,48 +1,85 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { ThemeColors } from "@/types";
+﻿import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { Audio } from 'expo-av';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const lightColors: ThemeColors = {
-  bg: "#f1f5f9", surface: "#ffffff", border: "#e2e8f0", text: "#1e293b", textMuted: "#64748b",
-  primary: "#6366f1", primaryLight: "#eef2ff", success: "#10b981", danger: "#ef4444",
-};
+export const ThemeContext = createContext<any>(null);
 
-export const darkColors: ThemeColors = {
-  bg: "#0f172a", surface: "#1e293b", border: "#334155", text: "#f8fafc", textMuted: "#94a3b8",
-  primary: "#818cf8", primaryLight: "#312e81", success: "#34d399", danger: "#f87171",
-};
+export const ThemeProvider = ({ children }: any) => {
+  const [isDark, setIsDark] = useState(true);
+  const [musicOn, setMusicOn] = useState(false);
+  const soundRef = useRef<Audio.Sound | null>(null);
 
-interface ThemeContextType {
-  isDarkMode: boolean;
-  toggleTheme: () => void;
-  colors: ThemeColors;
-}
-
-const ThemeContext = createContext<ThemeContextType>({
-  isDarkMode: false,
-  toggleTheme: () => {},
-  colors: lightColors,
-});
-
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const colors = isDark 
+    ? { bg: "#0F172A", text: "#F8FAFC", textMuted: "#94A3B8", cardBg: "#1E293B", border: "#334155" }
+    : { bg: "#F1F5F9", text: "#0F172A", textMuted: "#475569", cardBg: "#FFFFFF", border: "#CBD5E1" };
 
   useEffect(() => {
-    AsyncStorage.getItem("@todo_app_theme_mode").then((val) => {
-      if (val !== null) setIsDarkMode(val === "dark");
+    AsyncStorage.getItem('app_settings').then(val => {
+      if (val) {
+        const parsed = JSON.parse(val);
+        setIsDark(parsed.isDark ?? true);
+        setMusicOn(parsed.musicOn ?? false);
+      }
     });
   }, []);
 
-  const toggleTheme = () => {
-    setIsDarkMode((prev) => {
-      const next = !prev;
-      AsyncStorage.setItem("@todo_app_theme_mode", next ? "dark" : "light");
-      return next;
-    });
-  };
+  useEffect(() => {
+    AsyncStorage.setItem('app_settings', JSON.stringify({ isDark, musicOn }));
+  }, [isDark, musicOn]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const manageAudio = async () => {
+      try {
+        if (musicOn) {
+          await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+          
+          // Надійне посилання на розслаблюючу Bossa Nova (MP3)
+          const { sound } = await Audio.Sound.createAsync(
+            { uri: "https://freepd.com/music/Bossa%20Bossa.mp3" },
+            { isLooping: true, volume: 0.15 }
+          );
+          
+          if (isMounted) {
+            soundRef.current = sound;
+            await sound.playAsync();
+          } else {
+            await sound.unloadAsync();
+          }
+        } else {
+          // Безпечне вимкнення з перевіркою статусу
+          if (soundRef.current) {
+            const status = await soundRef.current.getStatusAsync();
+            if (status.isLoaded) {
+              await soundRef.current.stopAsync();
+              await soundRef.current.unloadAsync();
+            }
+            soundRef.current = null;
+          }
+        }
+      } catch (err) {
+        console.log("Audio error:", err);
+      }
+    };
+
+    manageAudio();
+
+    return () => {
+      isMounted = false;
+      if (soundRef.current) {
+        soundRef.current.getStatusAsync().then(status => {
+          if (status.isLoaded) {
+            soundRef.current?.unloadAsync().catch(() => {});
+          }
+        }).catch(() => {});
+        soundRef.current = null;
+      }
+    };
+  }, [musicOn]);
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, colors: isDarkMode ? darkColors : lightColors }}>
+    <ThemeContext.Provider value={{ isDark, setIsDark, musicOn, setMusicOn, colors }}>
       {children}
     </ThemeContext.Provider>
   );

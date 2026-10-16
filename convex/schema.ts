@@ -13,9 +13,19 @@ export default defineSchema({
     players: v.array(v.id("users")),
     currentTurn: v.optional(v.id("users")),
     gameState: v.any(),
-    winnerId: v.optional(v.id("users")),
     createdAt: v.number(),
   })
     .index("by_status", ["status"])
     .index("by_type", ["type"]),
+
+  // Нова таблиця для статистики гравця
+  playerStats: defineTable({
+    userId: v.id("users"),
+    wins: v.number(),
+    losses: v.number(),
+    draws: v.number(),
+    xp: v.number(),
+    level: v.number(),
+    rank: v.string(),
+  }).index("by_user", ["userId"]),
 });

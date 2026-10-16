@@ -1,41 +1,21 @@
 ﻿import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "@/context/ThemeContext";
-import { TouchableOpacity } from "react-native";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useRouter } from "expo-router";
 
 export default function TabLayout() {
-  const { colors } = useTheme();
-  const { signOut } = useAuthActions();
-  const router = useRouter();
-
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: true,
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.text,
-        headerRight: () => (
-          <TouchableOpacity 
-            onPress={async () => { await signOut(); router.replace("/sign-in"); }}
-            style={{ marginRight: 16 }}
-          >
-            <Ionicons name="log-out-outline" size={24} color={colors.danger} />
-          </TouchableOpacity>
-        ),
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-      }}
-    >
+    <Tabs screenOptions={{ 
+      headerShown: false, 
+      tabBarStyle: { backgroundColor: "#0F172A", borderTopColor: "#1E293B" },
+      tabBarActiveTintColor: "#3B82F6",
+      tabBarInactiveTintColor: "#64748B"
+    }}>
       <Tabs.Screen 
         name="index" 
-        options={{ 
-          title: "Лобі", 
-          headerTitle: "Карткові ігри",
-          tabBarIcon: ({ color, size }) => <Ionicons name="game-controller" size={size} color={color} /> 
-        }} 
+        options={{ title: "Ігри", tabBarIcon: ({ color, size }) => <Ionicons name="game-controller" size={size} color={color} /> }} 
+      />
+      <Tabs.Screen 
+        name="profile" 
+        options={{ title: "Кабінет", tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} /> }} 
       />
     </Tabs>
   );

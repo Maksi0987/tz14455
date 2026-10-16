@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as cards from "../cards.js";
 import type * as games from "../games.js";
 import type * as http from "../http.js";
+import type * as stats from "../stats.js";
 import type * as users from "../users.js";
 import type * as utils_cards from "../utils/cards.js";
 
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   cards: typeof cards;
   games: typeof games;
   http: typeof http;
+  stats: typeof stats;
   users: typeof users;
   "utils/cards": typeof utils_cards;
 }>;

@@ -1,57 +1,46 @@
-// convex/cards.ts
-
-export type Suit = "♠" | "♥" | "♦" | "♣";
-export type Rank = "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "A" | "2" | "3" | "4" | "5";
-
-export interface Card {
-  suit: Suit;
-  rank: Rank;
+﻿export interface Card {
+  suit: string;
+  rank: string;
   value: number;
 }
 
-const SUITS: Suit[] = ["♠", "♥", "♦", "♣"];
-
-// Генерація перемішаної колоди для Блекджеку (52 карти)
 export function generateBlackjackDeck(): Card[] {
-  const deck: Card[] = [];
-  const ranks: Rank[] = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
-  
-  for (const suit of SUITS) {
-    for (const rank of ranks) {
-      let value = parseInt(rank);
-      if (["J", "Q", "K"].includes(rank)) value = 10;
-      if (rank === "A") value = 11; // Туз за замовчуванням 11
-      
-      deck.push({ suit, rank, value });
-    }
+  const suits = ["♥", "♦", "♣", "♠"];
+  const ranks = [
+    { rank: "2", value: 2 }, { rank: "3", value: 3 }, { rank: "4", value: 4 }, { rank: "5", value: 5 },
+    { rank: "6", value: 6 }, { rank: "7", value: 7 }, { rank: "8", value: 8 }, { rank: "9", value: 9 },
+    { rank: "10", value: 10 }, { rank: "J", value: 10 }, { rank: "Q", value: 10 }, { rank: "K", value: 10 },
+    { rank: "A", value: 11 }
+  ];
+  let deck: Card[] = [];
+  for (let suit of suits) {
+    for (let r of ranks) { deck.push({ suit, rank: r.rank, value: r.value }); }
   }
-  return shuffle(deck);
+  return deck.sort(() => Math.random() - 0.5);
 }
 
-// Підрахунок очок (Туз стає 1, якщо сума > 21)
 export function calculateBlackjackScore(hand: Card[]): number {
-  let score = 0;
-  let aces = 0;
-  
-  for (const card of hand) {
+  let score = 0; let aces = 0;
+  for (let card of hand) {
     score += card.value;
     if (card.rank === "A") aces += 1;
   }
-  
-  while (score > 21 && aces > 0) {
-    score -= 10;
-    aces -= 1;
-  }
-  
+  while (score > 21 && aces > 0) { score -= 10; aces -= 1; }
   return score;
 }
 
-// Алгоритм тасування
-function shuffle(array: Card[]): Card[] {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+// Нова функція для Дурня (36 карт)
+export function generateDurakDeck(): Card[] {
+  const suits = ["♥", "♦", "♣", "♠"];
+  // Значення важливе для порівняння: 6 найменша, Туз найбільший
+  const ranks = [
+    { rank: "6", value: 6 }, { rank: "7", value: 7 }, { rank: "8", value: 8 }, { rank: "9", value: 9 },
+    { rank: "10", value: 10 }, { rank: "J", value: 11 }, { rank: "Q", value: 12 }, { rank: "K", value: 13 },
+    { rank: "A", value: 14 }
+  ];
+  let deck: Card[] = [];
+  for (let suit of suits) {
+    for (let r of ranks) { deck.push({ suit, rank: r.rank, value: r.value }); }
   }
-  return newArray;
+  return deck.sort(() => Math.random() - 0.5);
 }

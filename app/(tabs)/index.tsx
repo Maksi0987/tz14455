@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useMutation } from "convex/react";
@@ -14,18 +14,17 @@ export default function MenuScreen() {
   const startSinglePlayerGame = useMutation(api.games.startSinglePlayerGame);
 
   const handlePlay = async (type: "blackjack" | "durak") => {
-    if (type === "durak") {
-      alert("Дурень проти бота ще в розробці!");
-      return;
-    }
-    
     setLoadingType(type);
     try {
       const gameId = await startSinglePlayerGame({ type });
-      router.push(`/game/${gameId}`);
+      // Направляємо на різні екрани залежно від типу гри
+      if (type === "blackjack") {
+        router.push(`/game/${gameId}`);
+      } else {
+        router.push(`/game/durak/${gameId}`);
+      }
     } catch (error: any) {
-      alert(`Справжня помилка: ${error.message || error}`);
-      console.error(error);
+      alert(`Помилка: ${error.message || error}`);
     } finally {
       setLoadingType(null);
     }
@@ -41,7 +40,7 @@ export default function MenuScreen() {
       <View style={styles.cardsContainer}>
         {/* Картка Блекджеку */}
         <TouchableOpacity 
-          style={[styles.gameCard, { backgroundColor: "#10B981" }]} // Зелений
+          style={[styles.gameCard, { backgroundColor: "#10B981" }]} 
           onPress={() => handlePlay("blackjack")}
           disabled={loadingType !== null}
         >
@@ -53,13 +52,14 @@ export default function MenuScreen() {
 
         {/* Картка Дурня */}
         <TouchableOpacity 
-          style={[styles.gameCard, { backgroundColor: "#8B5CF6", opacity: 0.8 }]} // Фіолетовий
+          style={[styles.gameCard, { backgroundColor: "#8B5CF6" }]} 
           onPress={() => handlePlay("durak")}
           disabled={loadingType !== null}
         >
           <Ionicons name="color-wand" size={48} color="#fff" style={{ marginBottom: 12 }} />
           <Text style={styles.gameTitle}>Дурень</Text>
-          <Text style={styles.gameDesc}>Грати проти Бота (Скоро)</Text>
+          <Text style={styles.gameDesc}>Грати проти Бота</Text>
+          {loadingType === "durak" && <ActivityIndicator color="#fff" style={{ marginTop: 10 }} />}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -71,16 +71,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 32, fontWeight: "800", marginBottom: 6 },
   subtitle: { fontSize: 16 },
   cardsContainer: { gap: 20 },
-  gameCard: {
-    padding: 24,
-    borderRadius: 24,
-    alignItems: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
+  gameCard: { padding: 24, borderRadius: 24, alignItems: "center", elevation: 4, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5 },
   gameTitle: { fontSize: 24, fontWeight: "bold", color: "#fff", marginBottom: 4 },
-  gameDesc: { fontSize: 15, color: "rgba(255,255,255,0.8)" },
+  gameDesc: { fontSize: 15, color: "rgba(255,255,255,0.8)" }
 });
