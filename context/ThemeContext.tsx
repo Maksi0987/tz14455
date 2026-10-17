@@ -7,6 +7,7 @@ export const ThemeContext = createContext<any>(null);
 export const ThemeProvider = ({ children }: any) => {
   const [isDark, setIsDark] = useState(true);
   const [musicOn, setMusicOn] = useState(false);
+  const [sfxOn, setSfxOn] = useState(true); // Нове: Звукові ефекти увімкнені за замовчуванням
   const soundRef = useRef<Audio.Sound | null>(null);
 
   const colors = isDark 
@@ -19,28 +20,26 @@ export const ThemeProvider = ({ children }: any) => {
         const parsed = JSON.parse(val);
         setIsDark(parsed.isDark ?? true);
         setMusicOn(parsed.musicOn ?? false);
+        setSfxOn(parsed.sfxOn ?? true);
       }
     });
   }, []);
 
   useEffect(() => {
-    AsyncStorage.setItem('app_settings', JSON.stringify({ isDark, musicOn }));
-  }, [isDark, musicOn]);
+    AsyncStorage.setItem('app_settings', JSON.stringify({ isDark, musicOn, sfxOn }));
+  }, [isDark, musicOn, sfxOn]);
 
+  // Фонова музика
   useEffect(() => {
     let isMounted = true;
-
     const manageAudio = async () => {
       try {
         if (musicOn) {
           await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
-          
-          // Надійне посилання на розслаблюючу Bossa Nova (MP3)
           const { sound } = await Audio.Sound.createAsync(
             { uri: "https://freepd.com/music/Bossa%20Bossa.mp3" },
             { isLooping: true, volume: 0.15 }
           );
-          
           if (isMounted) {
             soundRef.current = sound;
             await sound.playAsync();
@@ -48,7 +47,6 @@ export const ThemeProvider = ({ children }: any) => {
             await sound.unloadAsync();
           }
         } else {
-          // Безпечне вимкнення з перевіркою статусу
           if (soundRef.current) {
             const status = await soundRef.current.getStatusAsync();
             if (status.isLoaded) {
@@ -58,28 +56,48 @@ export const ThemeProvider = ({ children }: any) => {
             soundRef.current = null;
           }
         }
-      } catch (err) {
-        console.log("Audio error:", err);
-      }
+      } catch (err) { console.log("Audio error:", err); }
     };
-
     manageAudio();
-
     return () => {
       isMounted = false;
       if (soundRef.current) {
         soundRef.current.getStatusAsync().then(status => {
-          if (status.isLoaded) {
-            soundRef.current?.unloadAsync().catch(() => {});
-          }
+          if (status.isLoaded) soundRef.current?.unloadAsync().catch(() => {});
         }).catch(() => {});
         soundRef.current = null;
       }
     };
   }, [musicOn]);
 
+  // ФУНКЦІЯ ПРОГРАВАННЯ ЗВУКОВИХ ЕФЕКТІВ
+  const playSoundEffect = async (type: 'play' | 'take' | 'win' | 'lose') => {
+    if (!sfxOn) return; // Якщо SFX вимкнено - мовчимо
+    
+    let url = "";
+    if (type === 'play') url = "https://actions.google.com/sounds/v1/foley/playing_card_slap.ogg";
+    else if (type === 'take') url = "https://actions.google.com/sounds/v1/foley/shuffling_cards.ogg";
+    else if (type === 'win') url = "https://actions.google.com/sounds/v1/cartoon/cartoon_success_fanfare.ogg";
+    else if (type === 'lose') url = "https://actions.google.com/sounds/v1/cartoon/sad_trombone.ogg";
+
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: url },
+        { shouldPlay: true, volume: 1.0 }
+      );
+      // Автоматично вивантажуємо звук з пам'яті після його завершення
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          sound.unloadAsync();
+        }
+      });
+    } catch (err) {
+      console.log("SFX play error:", err);
+    }
+  };
+
   return (
-    <ThemeContext.Provider value={{ isDark, setIsDark, musicOn, setMusicOn, colors }}>
+    <ThemeContext.Provider value={{ isDark, setIsDark, musicOn, setMusicOn, sfxOn, setSfxOn, colors, playSoundEffect }}>
       {children}
     </ThemeContext.Provider>
   );

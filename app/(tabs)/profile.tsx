@@ -14,8 +14,9 @@ export default function ProfileScreen() {
   const { signOut } = useAuthActions();
   const router = useRouter();
   
-  const { isDark, setIsDark, musicOn, setMusicOn, colors } = useTheme();
+  const { isDark, setIsDark, musicOn, setMusicOn, sfxOn, setSfxOn, colors } = useTheme();
 
+  // Показуємо завантаження тільки якщо дані ще тягнуться з бази
   if (user === undefined || stats === undefined) {
     return <View style={[styles.container, styles.center, { backgroundColor: colors.bg }]}><ActivityIndicator color="#10B981" /></View>;
   }
@@ -25,9 +26,12 @@ export default function ProfileScreen() {
     router.replace("/sign-in");
   };
 
-  const currentLevelXp = (stats.level - 1) ** 2 * 10;
-  const nextLevelXp = stats.level ** 2 * 10;
-  const progressPercent = Math.min(100, Math.max(0, ((stats.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100));
+  // ФІКС: Якщо статистики ще немає (null), ставимо значення за замовчуванням
+  const safeStats = stats || { level: 1, xp: 0, rank: "Новачок", wins: 0, losses: 0, draws: 0 };
+
+  const currentLevelXp = (safeStats.level - 1) ** 2 * 10;
+  const nextLevelXp = safeStats.level ** 2 * 10;
+  const progressPercent = Math.min(100, Math.max(0, ((safeStats.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100));
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
@@ -46,7 +50,7 @@ export default function ProfileScreen() {
           <Text style={[styles.userName, { color: colors.text }]}>{user?.name || "Гравець"}</Text>
           <Text style={[styles.userEmail, { color: colors.textMuted }]}>{user?.email}</Text>
           <View style={styles.rankBadge}>
-            <Text style={styles.rankText}>🏆 Ранг: {stats.rank}</Text>
+            <Text style={styles.rankText}>🏆 Ранг: {safeStats.rank}</Text>
           </View>
         </View>
 
@@ -60,19 +64,27 @@ export default function ProfileScreen() {
             <Switch value={isDark} onValueChange={setIsDark} trackColor={{ false: "#767577", true: "#3B82F6" }} />
           </View>
           
-          <View style={[styles.settingRow, { borderBottomWidth: 0 }]}>
+          <View style={styles.settingRow}>
             <View style={styles.settingInfo}>
               <Ionicons name={musicOn ? "musical-notes" : "volume-mute"} size={24} color={colors.text} />
               <Text style={[styles.settingText, { color: colors.text }]}>Фонова музика</Text>
             </View>
             <Switch value={musicOn} onValueChange={setMusicOn} trackColor={{ false: "#767577", true: "#10B981" }} />
           </View>
+
+          <View style={[styles.settingRow, { borderBottomWidth: 0 }]}>
+            <View style={styles.settingInfo}>
+              <Ionicons name={sfxOn ? "volume-high" : "volume-mute-outline"} size={24} color={colors.text} />
+              <Text style={[styles.settingText, { color: colors.text }]}>Звукові ефекти (SFX)</Text>
+            </View>
+            <Switch value={sfxOn} onValueChange={setSfxOn} trackColor={{ false: "#767577", true: "#8B5CF6" }} />
+          </View>
         </View>
 
         <View style={[styles.levelCard, { backgroundColor: colors.cardBg, borderColor: colors.border }]}>
           <View style={styles.levelHeader}>
-            <Text style={[styles.levelTitle, { color: colors.text }]}>Рівень {stats.level}</Text>
-            <Text style={styles.xpText}>{stats.xp} / {nextLevelXp} XP</Text>
+            <Text style={[styles.levelTitle, { color: colors.text }]}>Рівень {safeStats.level}</Text>
+            <Text style={styles.xpText}>{safeStats.xp} / {nextLevelXp} XP</Text>
           </View>
           <View style={[styles.progressBarBg, { backgroundColor: colors.bg }]}>
             <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
@@ -82,15 +94,15 @@ export default function ProfileScreen() {
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Статистика</Text>
         <View style={styles.statsGrid}>
           <View style={[styles.statBox, { borderColor: "#10B981", backgroundColor: "rgba(16,185,129,0.1)" }]}>
-            <Text style={[styles.statNumber, { color: "#10B981" }]}>{stats.wins}</Text>
+            <Text style={[styles.statNumber, { color: "#10B981" }]}>{safeStats.wins}</Text>
             <Text style={styles.statLabel}>Перемоги</Text>
           </View>
           <View style={[styles.statBox, { borderColor: "#F43F5E", backgroundColor: "rgba(244,63,94,0.1)" }]}>
-            <Text style={[styles.statNumber, { color: "#F43F5E" }]}>{stats.losses}</Text>
+            <Text style={[styles.statNumber, { color: "#F43F5E" }]}>{safeStats.losses}</Text>
             <Text style={styles.statLabel}>Поразки</Text>
           </View>
           <View style={[styles.statBox, { borderColor: "#F59E0B", backgroundColor: "rgba(245,158,11,0.1)" }]}>
-            <Text style={[styles.statNumber, { color: "#F59E0B" }]}>{stats.draws}</Text>
+            <Text style={[styles.statNumber, { color: "#F59E0B" }]}>{safeStats.draws}</Text>
             <Text style={styles.statLabel}>Нічиї</Text>
           </View>
         </View>
